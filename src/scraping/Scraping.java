@@ -14,11 +14,13 @@ public class Scraping {
         try {
             Document doc = Jsoup.connect("https://www.rekrute.com/offres-emploi-maroc.html").get();
 
+            // Sélection des données
             Elements jobTitles = doc.select("h2 > a.titreJob");
-            Elements experienceDemande = doc.select("li:contains(Type de contrat proposé :) > a");
-            Elements contractTypes = doc.select("ul > li:contains(Expérience requise :) > a");
+            Elements experienceDemande = doc.select("li:contains(Expérience requise :) > a");
+            Elements contractTypes = doc.select("li:contains(Type de contrat proposé :) > a");
             Elements dateElements = doc.select("em.date");
 
+            // Écriture dans le fichier CSV
             FileWriter csvWriter = new FileWriter("jobs.csv", StandardCharsets.UTF_8);
             csvWriter.append("Titre,Type de Contrat,Experience demandée,Date de début,Date de fin,Nombre de postes\n");
 
@@ -45,7 +47,7 @@ public class Scraping {
                 // Traitement des données avec TextProcessing
                 jobTitle = TextProcessing.normalizeText(jobTitle);
                 experienceDemandee = TextProcessing.removeStopwords(experienceDemandee);
-                contractType = TextProcessing.normalizeText(contractType);  // On garde les chiffres ici
+                contractType = TextProcessing.normalizeText(contractType);
 
                 csvWriter.append(jobTitle).append(",")
                         .append(contractType).append(",")
@@ -63,9 +65,3 @@ public class Scraping {
         }
     }
 }
-
-
-
-
-
-

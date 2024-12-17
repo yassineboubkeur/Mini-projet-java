@@ -8,5 +8,6 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="C:/Program Files (x86)/jsoup-1.18.3.jar"/>
 	<classpathentry kind="lib" path="C:/Program Files (x86)/apache-opennlp-2.5.1/lib/opennlp-tools-2.5.1.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/Weka/weka.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
