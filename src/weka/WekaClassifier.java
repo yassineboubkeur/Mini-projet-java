@@ -1,45 +1,111 @@
 package weka;
 
+
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.StringToNominal;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.Classifier;
-import weka.classifiers.Evaluation;
 import weka.core.converters.CSVLoader;
 import weka.core.Instances;
-
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import gui.ClassificationResult;
 
 public class WekaClassifier {
-    public static void main(String[] args) {
+    public static List<ClassificationResult> classifyJobs(String csvFilePath) {
+        List<ClassificationResult> results = new ArrayList<>();
         try {
-            // Étape 1 : Charger le fichier CSV
+            // Charger le fichier CSV
             CSVLoader loader = new CSVLoader();
-            loader.setSource(new File("jobs.csv"));
+            loader.setSource(new File(csvFilePath));
             Instances dataset = loader.getDataSet();
 
-            // Étape 2 : Définir la colonne "Type de Contrat" comme classe cible
-            int classIndex = 1; // "Type de Contrat" est la 2ème colonne (index 1)
+            // Convertir les attributs String en nominal
+            StringToNominal filter = new StringToNominal();
+            filter.setInputFormat(dataset);
+            filter.setAttributeRange("first-last"); // Appliquer à tous les attributs de type String
+            dataset = Filter.useFilter(dataset, filter);
+
+            // Définir la colonne "Type de Contrat" comme classe cible
+            int classIndex = 1; // Index de la colonne "Type de Contrat"
             dataset.setClassIndex(classIndex);
 
-            // Étape 3 : Appliquer l'algorithme NaiveBayes
+            // Appliquer NaiveBayes
             Classifier classifier = new NaiveBayes();
             classifier.buildClassifier(dataset);
 
-            // Étape 4 : Évaluer le modèle avec une validation croisée (10 folds)
-            Evaluation eval = new Evaluation(dataset);
-            eval.crossValidateModel(classifier, dataset, 10, new java.util.Random(1));
+            // Classifier chaque instance
+            for (int i = 0; i < dataset.numInstances(); i++) {
+                double actualClassValue = dataset.instance(i).classValue();
+                double predictedClassValue = classifier.classifyInstance(dataset.instance(i));
 
-            // Résultats de l'évaluation
-            System.out.println("=== Résumé de l'évaluation ===");
-            System.out.println(eval.toSummaryString());
+                String actualClass = dataset.classAttribute().value((int) actualClassValue);
+                String predictedClass = dataset.classAttribute().value((int) predictedClassValue);
 
-            System.out.println("\n=== Matrice de confusion ===");
-            System.out.println(eval.toMatrixString());
+                String title = dataset.instance(i).toString(0); // Supposons que le titre soit dans la colonne 0
 
-            System.out.println("\n=== Précision par classe ===");
-            System.out.println(eval.toClassDetailsString());
+                results.add(new ClassificationResult(title, actualClass, predictedClass));
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return results;
     }
 }
+
+//************************************************************************************
+//import weka.classifiers.bayes.NaiveBayes;
+//import weka.classifiers.Classifier;
+//import weka.classifiers.Evaluation;
+//import weka.core.converters.CSVLoader;
+//import weka.core.Instances;
+//
+//import java.io.File;
+//
+//import java.util.ArrayList;
+//import java.util.List;
+//
+//import gui.ClassificationResult;
+//
+//public class WekaClassifier {
+//    public static List<ClassificationResult> classifyJobs(String csvFilePath) {
+//        List<ClassificationResult> results = new ArrayList<>();
+//        try {
+//            // Charger le fichier CSV
+//            CSVLoader loader = new CSVLoader();
+//            loader.setSource(new File(csvFilePath));
+//            Instances dataset = loader.getDataSet();
+//
+//            // Définir la colonne "Type de Contrat" comme classe cible
+//            int classIndex = 1; // Index de la colonne "Type de Contrat"
+//            dataset.setClassIndex(classIndex);
+//
+//            // Appliquer NaiveBayes
+//            Classifier classifier = new NaiveBayes();
+//            classifier.buildClassifier(dataset);
+//
+//            // Classifier chaque instance
+//            for (int i = 0; i < dataset.numInstances(); i++) {
+//                double actualClassValue = dataset.instance(i).classValue();
+//                double predictedClassValue = classifier.classifyInstance(dataset.instance(i));
+//
+//                String actualClass = dataset.classAttribute().value((int) actualClassValue);
+//                String predictedClass = dataset.classAttribute().value((int) predictedClassValue);
+//
+//                String title = dataset.instance(i).toString(0); // Supposons que le titre soit dans la colonne 0
+//
+//                results.add(new ClassificationResult(title, actualClass, predictedClass));
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        return results;
+//    }
+//}
+
