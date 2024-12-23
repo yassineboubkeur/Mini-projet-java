@@ -6,12 +6,21 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.FileWriter;
-import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Scraping {
     public static void main(String[] args) {
-        try {
+        // Connexion à la base de données MySQL
+        String url = "jdbc:mysql://localhost:3306/jobs_db"; // Remplacez par votre URL de connexion
+        String username = "root"; // Remplacez par votre nom d'utilisateur
+        String password = "root"; // Remplacez par votre mot de passe
+
+        try (Connection conn = DriverManager.getConnection(url, username, password)) {
             Document doc = Jsoup.connect("https://www.rekrute.com/offres-emploi-maroc.html").get();
 
             // Sélection des données
@@ -20,48 +29,142 @@ public class Scraping {
             Elements contractTypes = doc.select("li:contains(Type de contrat proposé :) > a");
             Elements dateElements = doc.select("em.date");
 
-            // Écriture dans le fichier CSV
-            FileWriter csvWriter = new FileWriter("jobs.csv", StandardCharsets.UTF_8);
-            csvWriter.append("Titre,Type de Contrat,Experience demandée,Date de début,Date de fin,Nombre de postes\n");
+            // Préparer la requête d'insertion
+            String sql = "INSERT INTO job_offers (job_title, contract_type, experience_required, start_date, end_date, job_posts) VALUES (?, ?, ?, ?, ?, ?)";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                for (int i = 0; i < jobTitles.size(); i++) {
+                    String jobTitle = jobTitles.get(i).text();
+                    String experienceDemandee = experienceDemande.size() > i ? experienceDemande.get(i).text() : "Non spécifié";
+                    String contractType = contractTypes.size() > i ? contractTypes.get(i).text() : "Non spécifié";
 
-            for (int i = 0; i < jobTitles.size(); i++) {
-                String jobTitle = jobTitles.get(i).text();
-                String experienceDemandee = experienceDemande.size() > i ? experienceDemande.get(i).text() : "Non spécifié";
-                String contractType = contractTypes.size() > i ? contractTypes.get(i).text() : "Non spécifié";
+                    String startDate = "Non spécifié";
+                    String endDate = "Non spécifié";
+                    String jobPosts = "Non spécifié";
 
-                String startDate = "Non spécifié";
-                String endDate = "Non spécifié";
-                String jobPosts = "Non spécifié";
+                    if (dateElements.size() > i) {
+                        Element dateElement = dateElements.get(i);
+                        Elements spans = dateElement.select("span");
 
-                if (dateElements.size() > i) {
-                    Element dateElement = dateElements.get(i);
-                    Elements spans = dateElement.select("span");
-
-                    if (spans.size() == 3) {
-                        startDate = spans.get(0).text();
-                        endDate = spans.get(1).text();
-                        jobPosts = spans.get(2).text();
+                        if (spans.size() == 3) {
+                            startDate = spans.get(0).text();
+                            endDate = spans.get(1).text();
+                            jobPosts = spans.get(2).text();
+                        }
                     }
+
+                    // Convertir la date au format MySQL (YYYY-MM-DD)
+                    startDate = formatDate(startDate);
+                    endDate = formatDate(endDate);
+
+                    // Traitement des données avec TextProcessing
+                    jobTitle = TextProcessing.normalizeText(jobTitle);
+                    experienceDemandee = TextProcessing.removeStopwords(experienceDemandee);
+                    contractType = TextProcessing.normalizeText(contractType);
+
+                    // Remplir les paramètres de la requête préparée
+                    stmt.setString(1, jobTitle);
+                    stmt.setString(2, contractType);
+                    stmt.setString(3, experienceDemandee);
+                    stmt.setString(4, startDate.equals("Non spécifié") ? null : startDate);
+                    stmt.setString(5, endDate.equals("Non spécifié") ? null : endDate);
+                    stmt.setInt(6, jobPosts.equals("Non spécifié") ? 0 : Integer.parseInt(jobPosts));
+
+                    // Exécuter l'insertion
+                    stmt.executeUpdate();
                 }
 
-                // Traitement des données avec TextProcessing
-                jobTitle = TextProcessing.normalizeText(jobTitle);
-                experienceDemandee = TextProcessing.removeStopwords(experienceDemandee);
-                contractType = TextProcessing.normalizeText(contractType);
+                System.out.println("Données enregistrées dans la base de données");
 
-                csvWriter.append(jobTitle).append(",")
-                        .append(contractType).append(",")
-                        .append(experienceDemandee).append(",")
-                        .append(startDate).append(",")
-                        .append(endDate).append(",")
-                        .append(jobPosts).append("\n");
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-
-            csvWriter.close();
-            System.out.println("Données enregistrées dans jobs.csv");
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    // Méthode pour formater la date au format YYYY-MM-DD
+    private static String formatDate(String date) {
+        try {
+            if (date.equals("Non spécifié") || date.isEmpty()) {
+                return "Non spécifié";
+            }
+            SimpleDateFormat inputFormat = new SimpleDateFormat("dd/MM/yyyy");
+            SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date parsedDate = inputFormat.parse(date);
+            return outputFormat.format(parsedDate);
+        } catch (Exception e) {
+            return "Non spécifié"; // En cas d'erreur, renvoyer "Non spécifié"
+        }
+    }
 }
+
+
+
+
+/***********************************/
+//import nlp.TextProcessing;
+//import org.jsoup.Jsoup;
+//import org.jsoup.nodes.Document;
+//import org.jsoup.nodes.Element;
+//import org.jsoup.select.Elements;
+//
+//import java.io.FileWriter;
+//import java.nio.charset.StandardCharsets;
+//
+//public class Scraping {
+//    public static void main(String[] args) {
+//        try {
+//            Document doc = Jsoup.connect("https://www.rekrute.com/offres-emploi-maroc.html").get();
+//
+//            // Sélection des données
+//            Elements jobTitles = doc.select("h2 > a.titreJob");
+//            Elements experienceDemande = doc.select("li:contains(Expérience requise :) > a");
+//            Elements contractTypes = doc.select("li:contains(Type de contrat proposé :) > a");
+//            Elements dateElements = doc.select("em.date");
+//
+//            // Écriture dans le fichier CSV
+//            FileWriter csvWriter = new FileWriter("jobs.csv", StandardCharsets.UTF_8);
+//            csvWriter.append("Titre,Type de Contrat,Experience demandée,Date de début,Date de fin,Nombre de postes\n");
+//
+//            for (int i = 0; i < jobTitles.size(); i++) {
+//                String jobTitle = jobTitles.get(i).text();
+//                String experienceDemandee = experienceDemande.size() > i ? experienceDemande.get(i).text() : "Non spécifié";
+//                String contractType = contractTypes.size() > i ? contractTypes.get(i).text() : "Non spécifié";
+//
+//                String startDate = "Non spécifié";
+//                String endDate = "Non spécifié";
+//                String jobPosts = "Non spécifié";
+//
+//                if (dateElements.size() > i) {
+//                    Element dateElement = dateElements.get(i);
+//                    Elements spans = dateElement.select("span");
+//
+//                    if (spans.size() == 3) {
+//                        startDate = spans.get(0).text();
+//                        endDate = spans.get(1).text();
+//                        jobPosts = spans.get(2).text();
+//                    }
+//                }
+//
+//                // Traitement des données avec TextProcessing
+//                jobTitle = TextProcessing.normalizeText(jobTitle);
+//                experienceDemandee = TextProcessing.removeStopwords(experienceDemandee);
+//                contractType = TextProcessing.normalizeText(contractType);
+//
+//                csvWriter.append(jobTitle).append(",")
+//                        .append(contractType).append(",")
+//                        .append(experienceDemandee).append(",")
+//                        .append(startDate).append(",")
+//                        .append(endDate).append(",")
+//                        .append(jobPosts).append("\n");
+//            }
+//
+//            csvWriter.close();
+//            System.out.println("Données enregistrées dans jobs.csv");
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+//}

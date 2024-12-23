@@ -25,7 +25,7 @@ public class WekaClassifier {
             // Convertir les attributs String en nominal
             StringToNominal filter = new StringToNominal();
             filter.setInputFormat(dataset);
-            filter.setAttributeRange("first-last"); // Appliquer à tous les attributs de type String
+            filter.setAttributeIndex("first-last"); // Appliquer à tous les attributs de type String
             dataset = Filter.useFilter(dataset, filter);
 
             // Définir la colonne "Type de Contrat" comme classe cible
