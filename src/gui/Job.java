@@ -1,7 +1,7 @@
 package gui;
 
 
-class Job {
+public  class Job {
     private String title;
     private String contract;
     private String experience;

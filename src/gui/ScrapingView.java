@@ -13,7 +13,7 @@ public class ScrapingView {
         stage.setTitle("Scraper les annonces");
 
         Button scrapeButton = new Button("Commencer le scraping");
-        scrapeButton.setOnAction(event -> {
+        {
             try {
                 Scraping.main(null); // Appel du scraping
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -25,11 +25,11 @@ public class ScrapingView {
                 alert.setContentText("Erreur lors du scraping : " + e.getMessage());
                 alert.showAndWait();
             }
-        });
-
-        VBox vbox = new VBox(10, scrapeButton);
-        vbox.setStyle("-fx-padding: 20; -fx-alignment: center;");
-        stage.setScene(new Scene(vbox, 300, 200));
-        stage.show();
+        };
+//
+//        VBox vbox = new VBox(10, scrapeButton);
+//        vbox.setStyle("-fx-padding: 20; -fx-alignment: center;");
+//        stage.setScene(new Scene(vbox, 300, 200));
+//        stage.show();
     }
 }
