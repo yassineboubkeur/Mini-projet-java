@@ -16,6 +16,7 @@ import gui.ClassificationResult;
 public class WekaClassifier {
     public static List<ClassificationResult> classifyJobs(String csvFilePath) {
         List<ClassificationResult> results = new ArrayList<>();
+        
         try {
             // Charger le fichier CSV
             CSVLoader loader = new CSVLoader();
