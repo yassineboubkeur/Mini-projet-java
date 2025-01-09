@@ -26,6 +26,10 @@ public class ScrapingView {
                 alert.showAndWait();
             }
         };
+        
+        
+        
+        
 //
 //        VBox vbox = new VBox(10, scrapeButton);
 //        vbox.setStyle("-fx-padding: 20; -fx-alignment: center;");
