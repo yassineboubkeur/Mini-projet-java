@@ -10,19 +10,19 @@ import scraping.Scraping;
 public class ScrapingView {
     public static void showScrapingView() {
         Stage stage = new Stage();
-        stage.setTitle("Scraper les annonces");
+        stage.setTitle("Scrape Job offers");
 
-        Button scrapeButton = new Button("Commencer le scraping");
+        Button scrapeButton = new Button("Start scraping");
         {
             try {
                 Scraping.main(null); // Appel du scraping
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setContentText("Scraping terminé avec succès !");
+                alert.setContentText("Scraping Successfull !Please Click Display Data button to Show results");
                 alert.showAndWait();
             } catch (Exception e) {
                 e.printStackTrace();
                 Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setContentText("Erreur lors du scraping : " + e.getMessage());
+                alert.setContentText("Error scraping : " + e.getMessage());
                 alert.showAndWait();
             }
         };
