@@ -18,7 +18,7 @@ public class Scraping {
         // Connexion à la base de données MySQL
         String url = "jdbc:mysql://localhost:3306/jobs_db"; // Remplacez par votre URL de connexion
         String username = "root"; // Remplacez par votre nom d'utilisateur
-        String password = ""; // Remplacez par votre mot de passe
+        String password = "root"; // Remplacez par votre mot de passe
 
         try (Connection conn = DriverManager.getConnection(url, username, password)) {
             Document doc = Jsoup.connect("https://www.rekrute.com/offres-emploi-maroc.html").get();

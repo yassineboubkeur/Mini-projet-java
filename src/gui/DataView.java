@@ -18,7 +18,7 @@ public class DataView {
     // Database connection constants
     private static final String DB_URL = "jdbc:mysql://localhost:3306/jobs_db";
     private static final String DB_USERNAME = "root";
-    private static final String DB_PASSWORD = "";
+    private static final String DB_PASSWORD = "root";
 
     public static TableView<Job> getDataTableView() {
         TableView<Job> table = new TableView<>();
